@@ -1,0 +1,40 @@
+﻿@page "/"
+
+@using DxBlazor.Data
+@inject HttpClient Http
+
+<PageTitle>Workflow</PageTitle>
+<h1>Workflow</h1>
+
+@if (Workflows == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <DxGrid Data="@Workflows"
+                CssClass="mw-1100">
+        <Columns>
+            <DxGridDataColumn Caption="Owner" FieldName="OwnerName">
+            </DxGridDataColumn>
+            <DxGridDataColumn Caption="Name" FieldName="Name">
+            </DxGridDataColumn>
+            <DxGridDataColumn Caption="Created" FieldName="Created">
+            </DxGridDataColumn>
+            <DxGridDataColumn Caption="State" FieldName="CurrentState">
+            </DxGridDataColumn>
+        </Columns>
+        <DetailRowTemplate>
+            <WorkflowHistory History="((WorkflowItem)context.DataItem).History" />
+        </DetailRowTemplate>
+    </DxGrid>
+}
+
+@code {
+    private WorkflowItemCollection? Workflows { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Workflows = await Http.GetFromJsonAsync<WorkflowItemCollection>($"https://localhost:44389/");
+    }
+}

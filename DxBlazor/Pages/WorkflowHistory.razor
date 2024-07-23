@@ -1,0 +1,36 @@
+﻿@* @page "/workflowHistory" *@
+
+@using DxBlazor.Data
+
+@* <PageTitle>History</PageTitle> *@
+<h2>History</h2>
+
+@if (History == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <DxGrid Data="@History"
+            PageSize="5">
+        <Columns>
+            <DxGridDataColumn FieldName="DocumentTitle" Width="40%" />
+            <DxGridDataColumn FieldName="State" />
+            <DxGridDataColumn FieldName="Modified" />
+            <DxGridDataColumn FieldName="User" />
+            <DxGridDataColumn FieldName="Data">
+                <CellDisplayTemplate>
+                    @if (context.Value != null)
+                    {<a href="@context.Value" alt="">Data</a>}
+                    else
+                    {<span></span>}
+                </CellDisplayTemplate>
+            </DxGridDataColumn>
+        </Columns>
+    </DxGrid>
+}
+
+@code {
+    [Parameter]
+    public WorkflowHistoryCollection? History { get; set; }
+}

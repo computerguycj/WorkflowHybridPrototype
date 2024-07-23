@@ -1,0 +1,73 @@
+﻿@page "/weather"
+
+@using DxBlazor.Data
+@* @inject WeatherForecastService ForecastService *@
+@inject HttpClient Http
+
+<PageTitle>Weather</PageTitle>
+<h1>Weather</h1>
+
+@if (weatherForecast == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <DxGrid Data="@dailies"
+                CssClass="mw-1100">
+        <Columns>
+            <DxGridDataColumn Caption="Date" FieldName="dt" DisplayFormat="d">
+                <CellDisplayTemplate>
+                    @(UnixTimestampToDate((int)context.Value))
+                </CellDisplayTemplate>
+            </DxGridDataColumn>
+            <DxGridDataColumn Caption="Temperature" FieldName="temp.day">
+                <CellDisplayTemplate>
+                    @($"{KelvinToFahreheit((double)context.Value):0.0}°F")
+                </CellDisplayTemplate>
+            </DxGridDataColumn>
+            <DxGridDataColumn Caption="Feels Like" FieldName="feels_like.day">
+                <CellDisplayTemplate>
+                    @($"{KelvinToFahreheit((double)context.Value):0.0}°F")
+                </CellDisplayTemplate>
+            </DxGridDataColumn>
+            @* <DxGridDataColumn Caption="Weather" FieldName="weather">
+                <CellDisplayTemplate>
+                    @(WeatherDescription((List<Forecast>)context.Value))
+                    <img src="@(WeatherIconUrl((List<Forecast>)context.Value))" alt="" />
+                </CellDisplayTemplate>
+            </DxGridDataColumn> *@
+            <DxGridDataColumn Caption="Humidity" FieldName="humidity">
+                <CellDisplayTemplate>
+                    @($"{((int)context.Value)}%")
+                </CellDisplayTemplate>
+            </DxGridDataColumn>
+            <DxGridDataColumn Caption="Summary" FieldName="summary" />
+        </Columns>
+    </DxGrid>
+}
+
+@code {
+    private WeatherForecast? weatherForecast;
+    private Daily[]? dailies;
+
+    protected override async Task OnInitializedAsync()
+    {
+        //forecasts = await ForecastService.GetForecastAsync(DateOnly.FromDateTime(DateTime.Now));
+        var lat = 39.738449;
+        var lon = -104.984856;
+        var appid = "";
+        weatherForecast = await Http.GetFromJsonAsync<WeatherForecast>($"https://api.openweathermap.org/data/3.0/onecall?lat={lat}&lon={lon}&appid={appid}");
+        dailies = weatherForecast!.daily.ToArray();
+    }
+
+    private DateOnly UnixTimestampToDate(int timestamp)
+        => DateOnly.FromDateTime(DateTimeOffset.FromUnixTimeSeconds(timestamp).DateTime);
+
+    private double KelvinToFahreheit(double kelvin)
+        => 32 + (kelvin - 273.15) * 9 / 5;
+
+    private string WeatherDescription(List<Forecast> forecast) => forecast is null ? "" : forecast[0].description;
+
+    private string WeatherIconUrl(List<Forecast> forecast) => forecast is null ? "" : $"https://openweathermap.org/img/wn/{forecast[0].icon}@2x.png";
+}
